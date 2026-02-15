@@ -396,13 +396,8 @@
     </div>
 
     <script>
-        // 关键：自动注销并清理旧的 Service Worker 缓存，彻底解决报错
         if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.getRegistrations().then(function(registrations) {
-                for (let registration of registrations) {
-                    registration.unregister();
-                }
-            });
+            navigator.serviceWorker.register('./sw.js');
         }
 
         const WEEKDAYS_TB = ["གཟའ་ཉི་མ།", "གཟའ་ཟླ་བ།", "གཟའ་མིག་དམར།", "གཟའ་ལྷག་པ།", "གཟའ་ཕུར་བུ།", "གཟའ་པ་སངས།", "གཟའ་སྤེན་པ།"];
