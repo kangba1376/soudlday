@@ -1,4 +1,4 @@
-const VERSION = 'soul-day-2026-02-24-23:10'; 
+const VERSION = 'soul-day-2026-02-24-23:30'; 
 const CACHE_NAME = `soulday-cache-${VERSION}`;
 
 const ASSETS = [
