@@ -1,10 +1,9 @@
-const VERSION = 'soul-day-2026-02-24-20:23'; 
-const CACHE_NAME = VERSION; // 确保 CACHE_NAME 使用你的 VERSION
+const VERSION = 'soul-day-2026-02-24-23:10'; 
+const CACHE_NAME = `soulday-cache-${VERSION}`;
 
 const ASSETS = [
   './',
   './index.html',
-  './tailwind.js', // 核心改动：加入本地脚本缓存
   './TibetWildYak.ttf',
   './logo.png',
   './favicon.png',
@@ -24,15 +23,16 @@ self.addEventListener('install', (event) => {
       return cache.addAll(ASSETS);
     })
   );
-  self.skipWaiting(); 
+  self.skipWaiting(); // 强制跳过等待，立即激活新版本
 });
 
-// 激活阶段：清理旧版本
+// 激活阶段：清理旧版本的过期缓存
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((keys) => {
       return Promise.all(
         keys.map((key) => {
+          // 如果缓存名称不是当前的 VERSION，就全部删除
           if (key !== CACHE_NAME) {
             return caches.delete(key);
           }
@@ -40,15 +40,16 @@ self.addEventListener('activate', (event) => {
       );
     })
   );
-  self.clients.claim(); 
+  self.clients.claim(); // 立即取得页面的控制权
 });
 
-// 策略：缓存优先
+// 策略：缓存优先，如果没缓存再走网络
 self.addEventListener('fetch', (event) => {
   event.respondWith(
     caches.match(event.request).then((response) => {
       return response || fetch(event.request).then((networkResponse) => {
         return caches.open(CACHE_NAME).then((cache) => {
+          // 动态缓存新请求的资源
           cache.put(event.request, networkResponse.clone());
           return networkResponse;
         });
