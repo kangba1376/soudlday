@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Soul Day</title>
+    <meta name="app-version" content="1.1">
 
     <link rel="icon" type="image/png" sizes="32x32" href="favicon-small.png">
     <link rel="icon" type="image/png" href="favicon.png">
@@ -18,7 +19,7 @@
     <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
     <link rel="icon" type="image/png" sizes="512x512" href="icon-512.png">
 
-    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="tailwindcss.js"></script>
     <style>
         :root { 
             --main-red: #8B1A10; 
@@ -57,10 +58,11 @@
             display: flex;
             flex-direction: column;
             width: 100%;
-            height: 100dvh;
+            height: 100%;
             background-color: var(--bg);
             overflow: hidden;
-            position: relative;
+            position: fixed;
+            inset: 0;
             border: 4px solid var(--main-red);
             outline: 2px solid var(--gold);
             outline-offset: -6px;
@@ -206,7 +208,7 @@
             transform: translateX(100%);
             transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
             flex-direction: column;
-            height: 100dvh;
+            height: 100%;
             border: 4px solid var(--main-red);
             outline: 2px solid var(--gold);
             outline-offset: -6px;
@@ -340,8 +342,6 @@
                 </div>
                 <div class="zodiac-grid" id="zodiac-btns"></div>
                 <div class="disclaimer-box">
-                    <p class="disclaimer-line">藏族传统文化学习工具：内容基于藏历文献整理，仅供参考。</p>
-                    <p class="disclaimer-line">⚠️ 此工具不作为任何决策依据，请理性使用，相信科学。</p>
                     <p class="copyright-line">© ༢༠༢༦ ཁམས་པ་ཚང་། KHAM PA TSANG ༡༧༧༡༡༩༥༥༥༥༤</p>
                 </div>
             </section>
@@ -406,6 +406,21 @@
         const ZODIAC_CN = ["鼠", "牛", "虎", "兔", "龙", "蛇", "马", "羊", "猴", "鸡", "狗", "猪"];
         const ZODIAC_TB = ["བྱི་བ།", "གླང་།", "སྟག", "ཡོས།", "འབྲུག", "སྦྲུལ།", "རྟ།", "ལུག", "སྤྲེལ།", "བྱ།", "ཁྱི།", "ཕག"];
         const ELEMENTS_TB = ["ལྕགས།", "ལྕགས།", "ཆུ།", "ཆུ།", "ཤིང་།", "ཤིང་།", "མེ།", "མེ།", "ས།", "ས།"];
+        const APP_VERSION = "1.1";
+        // 藏历年表：依据西藏自治区藏医院天文历算研究所发布的藏历
+        // losar = 藏历新年（洛萨）公历日期；rabjung = 饶迥年序；tbYear = 藏历纪年；element/animal = 五行与生肖
+        const TIBETAN_CALENDAR = {
+            2026: { losar: [2026, 1, 17], rabjung: 40, tbYear: 2153, element: "མེ།", animal: "རྟ།", nameCn: "火马年" },
+            2027: { losar: [2027, 1, 7], rabjung: 41, tbYear: 2154, element: "མེ།", animal: "ལུག", nameCn: "火羊年" }
+        };
+
+        function getTibetanCalendarYear(date) {
+            const y = date.getFullYear();
+            const entry = TIBETAN_CALENDAR[y];
+            if (!entry) return y;
+            return date >= new Date(entry.losar[0], entry.losar[1], entry.losar[2]) ? y : y - 1;
+        }
+
         const ASTRO_MAP = { "鼠": [2, 3, 6], "猪": [2, 3, 6], "虎": [6, 4, 5], "兔": [6, 4, 5], "蛇": [5, 2, 3], "马": [5, 2, 3], "猴": [4, 5, 2], "鸡": [4, 5, 2], "牛": [3, 6, 4], "狗": [3, 1, 4], "羊": [1, 5, 4], "龙": [3, 0, 4] };
         const APPLE_ICONS = { "生耀": "❤️", "圣耀": "🌟", "克耀": "⚠️" };
         let currentIdx = 0;
@@ -501,8 +516,7 @@
             document.getElementById('birth-banner-img').innerHTML = `<img src="${currentIdx + 1}.png" class="h-full w-auto object-contain">`;
             document.getElementById('birth-banner-name-tb').innerText = ZODIAC_TB[currentIdx];
             const now = new Date();
-            const currentYear = now.getFullYear();
-            const baseYear = (now < (new Date(2026, 1, 17))) ? currentYear - 1 : currentYear;
+            const baseYear = getTibetanCalendarYear(now);
             let yearsHtml = "";
             let count = 0;
             for (let y = baseYear; count < 12; y--) { 
@@ -530,6 +544,66 @@
             initZodiacBtns();
             initStars();
         };
+    </script>
+
+    <style>
+        #eula-overlay { position: fixed; inset: 0; z-index: 1000; background: var(--bg); display: flex; flex-direction: column; border: 4px solid var(--main-red); outline: 2px solid var(--gold); outline-offset: -6px; border-radius: 1rem; padding: calc(env(safe-area-inset-top, 20px) + 12px) 6% calc(env(safe-area-inset-bottom, 15px) + 16px); }
+        #eula-overlay.eula-hidden { display: none; }
+        .eula-title { color: var(--main-red); text-align: center; font-weight: 900; font-size: 2.4vh; margin: 0 0 0.6vh; }
+        .eula-body { flex: 1; min-height: 0; overflow-y: auto; -webkit-overflow-scrolling: touch; background: #fff; border: 1px solid rgba(0,0,0,0.06); border-radius: 1rem; padding: 2vh 4%; line-height: 1.7; font-size: 1.9vh; color: #334155; margin-top: 1vh; }
+        .eula-body p { margin: 0 0 1.2vh; }
+        .eula-body .tb { font-size: 2vh; color: #1e293b; }
+        .eula-btns { display: flex; gap: 4%; margin-top: 2vh; }
+        .eula-btns button { flex: 1; padding: 1.4vh 0; border-radius: 1rem; border: none; font-weight: 800; font-size: 2vh; line-height: 1.5; }
+        #eula-accept { background: var(--main-red); color: #FDFBF7; }
+        #eula-decline { background: #e2e8f0; color: #334155; }
+        #eula-exit-note { position: fixed; inset: 0; z-index: 1001; background: var(--main-red); color: #FDFBF7; display: none; flex-direction: column; align-items: center; justify-content: center; gap: 2vh; padding: 8%; text-align: center; font-size: 2.2vh; }
+        #eula-exit-note button { background: #FDFBF7; color: var(--main-red); border: none; border-radius: 1rem; padding: 1.4vh 6%; font-weight: 800; font-size: 2vh; }
+    </style>
+    <div id="eula-overlay">
+        <h2 class="eula-title font-tibetan">བེད་སྤྱོད་ཆོག་མཆན་གྲོས་ཆོད།</h2>
+        <h2 class="eula-title">使用许可协议</h2>
+        <div class="eula-body">
+            <p class="tb font-tibetan">༡ མཉེན་ཆས「Soul Day」འདི་ཡི་ནང་དོན་ཚང་མ་བོས་ཀྱི་ལོ་ཐོའི་ཡིག་ཚང་ལ་གཞིགས་ནས་སྒྲིག་པ་ཡིན་ཞིང་། བོད་ཀྱི་སྲོལ་རྒྱུན་རིག་གནས་དང་ལོ་ཐོའི་ཤེས་བྱ་སློབ་སྦྱོང་བྱེད་སའི་ཡོ་ཆས་ཙམ་ལས། ལས་དོན་སོགས་ཐག་གཅོད་ཀྱི་གཞི་འཛིན་སར་མི་འོས་པ་ཡིན་ནོ།</p>
+            <p>一、本软件「Soul Day」为藏族传统文化与藏历知识学习工具，所载内容依据藏历文献整理，仅供参考，不构成任何决策依据。</p>
+            <p class="tb font-tibetan">༢ མཉེན་ཆས་འདི་བེད་སྤྱོད་བྱས་ཚེ་གྲོས་ཆོད་འདི་ལ་མོས་མཐུན་ཡོད་དགོས་པ་ཡིན། གལ་ཏེ་མོས་མཐུན་མེད་ན「མོས་མཐུན་མེད」ཅེས་པར་མནན་ནས་མཉེན་ཆས་སེལ་བསུབ་མཛད་རོགས།</p>
+            <p>二、使用本软件即表示您同意本协议；如您不同意，请点击“不接受”并退出本软件。</p>
+            <p class="tb font-tibetan">༣ མཉེན་ཆས་འདིས་ཁྱེད་ཀྱི་མི་སྒེར་གྱི་ཆ་འཕྲིན་གང་ཡང་བསྡུ་མི་ལེན། གཞི་གྲངས་ཚང་མ་ཁྱེད་ཀྱི་ཡོ་ཆས་ནང་ཁོ་ནར་ཉར་བ་ཡིན།</p>
+            <p>三、本软件不收集任何个人信息，所有数据仅保存在您的设备本地。</p>
+            <p class="tb font-tibetan">༤ ཆོག་མཆན་མ་ཐོབ་པར་ནང་དོན་བཤུས་བཟོ་དང་རྫུན་བཟོ་བྱ་རྒྱུ་མེད་ལ། ཚོང་ལས་ཀྱི་དམིགས་སུའང་སྤྱོད་རྒྱུ་མེད།</p>
+            <p>四、未经许可，不得复制、篡改本软件内容或用于商业用途。</p>
+            <p class="tb font-tibetan" style="text-align:center;color:#8B1A10;">© ཁམས་པ་ཚང་། KHAM PA TSANG</p>
+        </div>
+        <div class="eula-btns">
+            <button id="eula-decline" onclick="eulaDecline()">不接受 · 退出<br><span class="font-tibetan">མོས་མཐུན་མེད། ཐོན་པ།</span></button>
+            <button id="eula-accept" onclick="eulaAccept()">接受并继续<br><span class="font-tibetan">མོས་མཐུན་ཡོད།</span></button>
+        </div>
+    </div>
+    <div id="eula-exit-note">
+        <p class="font-tibetan">ཁྱེད་ཀྱིས་བེད་སྤྱོད་ཆོག་མཆན་གྱི་གྲོས་མཐུན་ལ་མོས་མཐུན་མ་བྱས་པས། མཉེན་ཆས་འདི་སྤྱོད་ཐབས་མེད། མཉེན་ཆས་ནས་ཐོན་རོགས།</p>
+        <p>您未接受《使用许可协议》，本软件已停止使用，请退出应用。</p>
+        <button onclick="eulaReview()">重新查看协议 / <span class="font-tibetan">གྲོས་མཐུན་ལ་ཡང་བསྐྱར་གཟིགས།</span></button>
+    </div>
+    <script>
+        (function () {
+            var KEY = 'soulday_eula_v1';
+            var ov = document.getElementById('eula-overlay');
+            try { if (localStorage.getItem(KEY) === '1') ov.classList.add('eula-hidden'); } catch (e) { }
+            window.eulaAccept = function () {
+                try { localStorage.setItem(KEY, '1'); } catch (e) { }
+                ov.classList.add('eula-hidden');
+            };
+            window.eulaReview = function () {
+                document.getElementById('eula-exit-note').style.display = 'none';
+                ov.classList.remove('eula-hidden');
+            };
+            window.eulaDecline = function () {
+                try { if (window.Capacitor && Capacitor.Plugins && Capacitor.Plugins.App) { Capacitor.Plugins.App.exitApp(); } } catch (e) { }
+                try { if (window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.souldayQuit) { window.webkit.messageHandlers.souldayQuit.postMessage('quit'); } } catch (e) { }
+                try { if (window.chrome && window.chrome.webview) { window.chrome.webview.postMessage('quit'); } } catch (e) { }
+                setTimeout(function () { document.getElementById('eula-exit-note').style.display = 'flex'; }, 400);
+            };
+        })();
     </script>
 </body>
 </html>
